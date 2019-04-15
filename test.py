@@ -126,6 +126,16 @@ def request_baidu():
     res = requests.get('https://www.baidu.com',proxies = proxies)
     print(res.status_code)
     print(res.text)
+def request_google():
+
+    proxies = {
+        'http': 'http://csyqu2nu:HCA4137y6@23.225.97.136:3456' ,
+        'https': 'http://csyqu2nu:HCA4137y6@23.225.97.136:3456' ,
+    }
+    # time.sleep(2)
+    res = requests.get('https://www.google.com', proxies=proxies)
+    print(res.status_code)
+    print(res.text)
 if __name__ == '__main__':
     # createtable()
     # insertsql()
@@ -145,4 +155,5 @@ if __name__ == '__main__':
     # print(update)
 
     # requestProxy();
-    request_baidu()
+    # request_baidu()
+    request_google()

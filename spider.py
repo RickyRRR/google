@@ -20,7 +20,7 @@ user_agent_list = ["Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML
 
 def get_ip():
     time.sleep(5)
-    res = requests.get('http://410194561586418077.standard.hutoudaili.com/?num=1&area_type=2&scheme=1&anonymity=3&order=2')
+    res = requests.get('http://410194561586418077.standard.hutoudaili.com/?num=1&area_type=3&scheme=1&anonymity=3&order=1')
     return  res.text
 def get_page(offset):
     requests.adapters.DEFAULT_RETRIES = 5
