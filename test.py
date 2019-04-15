@@ -1,4 +1,7 @@
 
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import time
 
 import pymysql
 import requests
@@ -108,6 +111,21 @@ def md5():
     # mdtstr2 = md5(b'aaa').hexdigest()
     print(mdtstr1)
     print(mdtstr2)
+def requestProxy():
+    res= requests.get('http://410194561586418077.standard.hutoudaili.com/?num=1&area_type=3&scheme=1&anonymity=3&order=1')
+    print(res.text)
+    print(type(res.text))
+    return res.text
+def request_baidu():
+    ret =  requestProxy()
+    proxies = {
+        'http': 'http://'+ret,
+        'https': 'http://'+ret,
+    }
+    time.sleep(2)
+    res = requests.get('https://www.baidu.com',proxies = proxies)
+    print(res.status_code)
+    print(res.text)
 if __name__ == '__main__':
     # createtable()
     # insertsql()
@@ -126,7 +144,5 @@ if __name__ == '__main__':
     # update = ','.join([" {key} = %s".format(key=key) for key in data])
     # print(update)
 
-    text = 'konstantin-stanislavskis-156th-birthday-5117745111760896.4-2xa.gif'
-    shux =text.split('.')[-1]
-    new_text = text[:-(len(shux)+1):]
-    print(new_text)
+    # requestProxy();
+    request_baidu()

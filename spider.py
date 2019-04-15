@@ -13,16 +13,25 @@ import re
 from pyquery import PyQuery as pq
 import pymysql
 user_agent_list = ["Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1","Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6","Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1090.0 Safari/536.6","Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/19.77.34.5 Safari/537.1","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5","Mozilla/5.0 (Windows NT 6.0) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.36 Safari/536.5","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3","Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3","Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3","Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3","Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.0 Safari/536.3","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24","Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24","Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) App leWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53"]
-proxies = {
-    "http"  : 'http://127.0.0.1:1080',
-    "https" : 'https://127.0.0.1:1080',
-}
+# proxies = {
+#     "http"  : 'http://127.0.0.1:1080',
+#     "https" : 'https://127.0.0.1:1080',
+# }
 
-
+def get_ip():
+    time.sleep(5)
+    res = requests.get('http://410194561586418077.standard.hutoudaili.com/?num=1&area_type=2&scheme=1&anonymity=3&order=2')
+    return  res.text
 def get_page(offset):
     requests.adapters.DEFAULT_RETRIES = 5
     s = requests.session()
     s.keep_alive = False
+    ret = get_ip()
+    print(ret)
+    proxies = {
+        "http": 'http://'+ret,
+        "https" : 'http://'+ret,
+    }
     # base_url = 'https://www.google.com/doodles/json/2019/{}?hl=zh_CN'.format(offset)
     # url = base_url + urlencode(params)
     url = 'https://www.google.com/doodles/json/2019/{}?hl=zh_CN'.format(offset)
@@ -31,7 +40,7 @@ def get_page(offset):
 
         headers1 = {'User_Agent': UA,
                     'Connection': 'close'}
-        resp = requests.get(url,headers=headers1,proxies=proxies)
+        resp = s.get(url,headers=headers1,proxies=proxies)
         # print(url)
         if 200  == resp.status_code:
             # print(resp.json())
@@ -41,6 +50,7 @@ def get_page(offset):
             return resp.text
     except requests.ConnectionError as e:
         print(e)
+        # get_page(1)
         return None
 
 
@@ -160,8 +170,13 @@ def save_info(item):
         requests.adapters.DEFAULT_RETRIES = 5
         s = requests.session()
         s.keep_alive = False
-        time.sleep(3)
-        resp = requests.get(infourl,headers=headers1,proxies=proxies)
+        ret = get_ip()
+        proxies = {
+            "http": 'http://' + ret,
+            "https": 'http://' + ret,
+        }
+        time.sleep(2)
+        resp = s.get(infourl,headers=headers1,proxies=proxies)
         file_suffix = item.get('high_res_url').split('.')[-1]
         file_name = item.get('high_res_url').split('/')[-1]
         if not os.path.exists(img_path):
@@ -190,9 +205,11 @@ def save_info(item):
 
             else:
                 print('Already Downloaded', file_path)
+            return True
     except requests.ConnectionError as e:
         print(e)
         print('Failed to Save Image，item %s' % item)
+        return False
 
 def main(offset):
     jsonArrStr = get_page(offset)
@@ -205,7 +222,11 @@ def main(offset):
 
         #info = get_story(item);   #包含了story
         print(info)
-        save_info(info)
+        while True:
+            isSaved = save_info(info)
+            if isSaved:
+                break;
+
     s = requests.session()
     s.keep_alive = False
 
@@ -219,7 +240,7 @@ if __name__ == '__main__':
 
     pool = Pool()
     groups = ([x * 20 for x in range(GROUP_START, GROUP_END + 1)])
-    time.sleep(3)
+    # time.sleep(3)
     main(1)
     # pool.map(main, [1])
     pool.close()
